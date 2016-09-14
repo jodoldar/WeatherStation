@@ -3,7 +3,7 @@
  * al equipo a la pagina web Weather Underground
  * 
  * @author Josep Dols @jodoldar 
- * @version 1.0 - First Release
+ * @version 1.2 - Third Release
  */
 import java.util.*;
 import java.io.*;
@@ -28,6 +28,7 @@ public class Weather {
         String resultado = "https://weatherstation.wunderground.com/weatherstation/updateweatherstation.php?ID=XXXXXX&PASSWORD=XXXXXXX";
         try{
             Scanner in = new Scanner(new File("/home/pi/current.txt"));
+            double temperatura=0, humedad=0, dewpoint;
             while(in.hasNext()){
                 String aux = in.nextLine();
                 if(aux.startsWith(" ")){
@@ -35,36 +36,48 @@ public class Weather {
                     //Bloque para introducir la hora actual
                     if(auxTrim.startsWith("dateTime:")){
                         resultado = resultado + "&dateutc=now";
-                    //Bloque para introducir la humedad relativa
-                    }else if(auxTrim.startsWith("h_1:")){
+                    }else if(auxTrim.startsWith("h_1:")){   //Bloque para introducir la humedad relativa
                         String[] parts = auxTrim.split(":");
                         int valor = Integer.parseInt(parts[1].trim());
                         resultado = resultado + "&humidity=" + valor;
-                    //Bloque para introducir la presión atmosferica
-                    }else if(auxTrim.startsWith("slp:")){
+                    }else if(auxTrim.startsWith("slp:")){   //Bloque para introducir la presión atmosferica
                         String[] parts = auxTrim.split(":");
                         float valor = Float.parseFloat(parts[1].trim());
-                        float valorIn = valor * (float)0.02952998751; 
+                        float valorIn = valor * (float)0.02952998751;   //Cambio de unidad: mBar -> inHg
                         resultado = resultado + "&baromin=" + valorIn;
-                    //Bloque para introducir la temperatura
-                    }else if(auxTrim.startsWith("t_1:")){
+                    }else if(auxTrim.startsWith("t_1:")){   //Bloque para introducir la temperatura
                         String[] parts = auxTrim.split(":");
                         float valor = Float.parseFloat(parts[1].trim());
-                        float valorF = ((valor*9)/5) + 32;
+                        float valorF = ((valor*9)/5) + 32;              //Cambio de unidad: ºC -> ºF
                         resultado = resultado + "&tempf=" + valorF;
-                    //Bloque para introducir la dirección del viento
-                    }else if(auxTrim.startsWith("winddir:")){
+                    }else if(auxTrim.startsWith("winddir:")){   //Bloque para introducir la dirección del viento
                         String[] parts = auxTrim.split(":");
                         int valor = Integer.parseInt(parts[1].trim());
-                        resultado = resultado + "&winddir=" + valor;
+                        double valorReal = valor * 22.5;        //Adaptar escala [0-15] -> [0-337,5]
+                        resultado = resultado + "&winddir=" + valorReal;
+                    }else if(auxTrim.startsWith("windgust:")){
+                        String[] parts = auxTrim.split(":");
+                        float valor = Float.parseFloat(parts[1].trim());
+                        resultado = resultado + "&windgustmph=" + valor;
+                    }else if(auxTrim.startsWith("windspeed:")){
+                        String[] parts = auxTrim.split(":");
+                        float valor = Float.parseFloat(parts[1].trim());
+                        resultado = resultado + "&windspeedmph=" + valor;
                     }
                 }
             }
+            //Cálculo del punto de rocio a partir de los valores obtenidos de temperatura y humedad
+            dewpoint = Math.pow((humedad/100),0.125);
+            dewpoint = dewpoint * (112+(0.9*temperatura));
+            dewpoint = dewpoint + (temperatura*0.1);
+            dewpoint = dewpoint -112;
+            double dewpointF = ((dewpoint*9)/5)+32;
+            resultado = resultado + "&dewptf=" + dewpointF;
         }catch(FileNotFoundException e){
             System.err.println("Hay fallo");
         }
         //Ultimos bloques necesarios para completar el envio
-        resultado = resultado + "&softwaretype=TFASinus&action=updateraw";
+        resultado = resultado + "&rainin=0&softwaretype=TFASinus&action=updateraw";
         return resultado;
     }
     public static void main(String[] args){
