@@ -1,0 +1,44 @@
+Using configuration file /etc/weewx/weewx.conf
+Using TE923 driver version 0.17 (weewx.drivers.te923)
+Querying the station for current weather data...
+        dateTime: 1473863409
+        forecast: 4
+             h_1: 32
+       h_1_state: ok
+             h_2: None
+       h_2_state: no_link
+             h_3: None
+       h_3_state: no_link
+             h_4: None
+       h_4_state: no_link
+             h_5: None
+       h_5_state: no_link
+            h_in: 31
+      h_in_state: ok
+            rain: 1304
+      rain_state: ok
+             slp: 1010.0625
+       slp_state: ok
+           storm: 0
+             t_1: 25.1
+       t_1_state: ok
+             t_2: None
+       t_2_state: no_link
+             t_3: None
+       t_3_state: no_link
+             t_4: None
+       t_4_state: no_link
+             t_5: None
+       t_5_state: no_link
+            t_in: 27.0
+      t_in_state: ok
+              uv: None
+        uv_state: no_link
+       windchill: 27.3
+ windchill_state: ok
+         winddir: 10
+   winddir_state: ok
+        windgust: 5.8
+  windgust_state: ok
+       windspeed: 3.2
+ windspeed_state: ok
