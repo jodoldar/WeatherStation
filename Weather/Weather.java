@@ -3,7 +3,7 @@
  * al equipo a la pagina web Weather Underground
  * 
  * @author Josep Dols @jodoldar 
- * @version 1.2 - Third Release
+ * @version 1.3 - Third Release
  */
 import java.util.*;
 import java.io.*;
@@ -55,13 +55,27 @@ public class Weather {
                         int valor = Integer.parseInt(parts[1].trim());
                         double valorReal = valor * 22.5;        //Adaptar escala [0-15] -> [0-337,5]
                         resultado = resultado + "&winddir=" + valorReal;
-                    }else if(auxTrim.startsWith("windgust:")){
+                    }else if(auxTrim.startsWith("windgust:")){  //Bloque para introducir la velocidad de las rafagas de viento
                         String[] parts = auxTrim.split(":");
-                        float valor = Float.parseFloat(parts[1].trim());
+                        String auxCurrent = parts[1].trim();
+                        float valor;
+                        if(auxCurrent.equals("None")){
+                            valor = 0; 
+                        }else{
+                            valor = Float.parseFloat(auxCurrent);
+                        }
+                        //float valor = Float.parseFloat(parts[1].trim());
                         resultado = resultado + "&windgustmph=" + valor;
-                    }else if(auxTrim.startsWith("windspeed:")){
+                    }else if(auxTrim.startsWith("windspeed:")){ //Bloque para introducir la velocidad media del viento
                         String[] parts = auxTrim.split(":");
-                        float valor = Float.parseFloat(parts[1].trim());
+                        String auxCurrent = parts[1].trim();
+                        float valor;
+                        if(auxCurrent.equals("None")){
+                            valor = 0;
+                        }else{
+                            valor = Float.parseFloat(parts[1].trim());
+                        }
+                        //float valor = Float.parseFloat(parts[1].trim());
                         resultado = resultado + "&windspeedmph=" + valor;
                     }
                 }
@@ -74,10 +88,37 @@ public class Weather {
             double dewpointF = ((dewpoint*9)/5)+32;
             resultado = resultado + "&dewptf=" + dewpointF;
         }catch(FileNotFoundException e){
-            System.err.println("Hay fallo");
+            System.err.println("Hay fallo en la lectura del fichero de texto");
         }
+        
+        try{
+            File oldFile = new File("/home/pi/Rain.txt");
+            Scanner inRain = new Scanner(oldFile);
+            int numero = inRain.nextInt(), actual = inRain.nextInt(), acumulado = inRain.nextInt();
+            Calendar cal = Calendar.getInstance();
+            int diario = cal.get(Calendar.DAY_OF_MONTH);
+            if(numero==diario){
+            	acumulado+=actual;
+            }else{
+            	acumulado = 0;
+            }
+
+            String salida = "&rainin=" + actual + "&dailyrainin=" + acumulado;
+            resultado = resultado + salida;
+            oldFile.delete();
+            
+            PrintWriter outRain = new PrintWriter(new File("/home/pi/Rain.txt"));
+            outRain.println(diario);
+            outRain.println("0");
+            outRain.println(acumulado);
+
+        } catch (FileNotFoundException e) {
+            resultado = resultado + "&rainin=0";
+        }
+        
+        
         //Ultimos bloques necesarios para completar el envio
-        resultado = resultado + "&rainin=0&softwaretype=TFASinus&action=updateraw";
+        resultado = resultado + "&softwaretype=Custom&action=updateraw";
         return resultado;
     }
     public static void main(String[] args){
@@ -90,4 +131,7 @@ public class Weather {
         }
     }
 }
+
+
+
 
